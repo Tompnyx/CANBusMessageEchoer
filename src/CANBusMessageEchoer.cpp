@@ -1,25 +1,27 @@
 //
-// Created by tompnyx on 09/08/2022.
+// Created by Tompnyx on 09/08/2022.
 //
 #include <Arduino.h>
 #include <mcp2515_can.h>
 #include <SD.h>
 
 // CONSTANTS ==================================================================
-// Sets the maximum payload size - CANFD can carry data up to 64 bytes, whereas
-// CAN 2.0 can only carry up to 8 bytes
-#define MAX_DATA_SIZE 8
+// The baud rate of the board
+#define BAUD 115200
+// The SPI CS Pin of the Arduino
+#define SPI_CS_PIN 10
+// The CS Int Pin of the Arduino
+#define CAN_INT_PIN 2
+// The SD SPI CS PIN of the Arduino (If your Arduino or CAN-BUS shield has SD
+// card capabilities
+#define SD_SPI_CS_PIN 4
 
 // PUBLIC VARIABLES ===========================================================
-// CAN_2515
-const int SPI_CS_PIN = 10;
-const int CAN_INT_PIN = 2;
-const int SD_SPI_CS_PIN = 4;
 // Set CS pin
 mcp2515_can CAN(SPI_CS_PIN);
 
 // The filename of the CAN bus data
-const char *filename = "Test.txt";
+const char *filename = "AFD.txt";
 // The file object the file will be opened to
 File myFile;
 // The time the device started
@@ -62,10 +64,11 @@ uint8_t hex2bin(char aChar) {
 }
 
 void setup() {
-    SERIAL_PORT_MONITOR.begin(115200);
-    // wait for Serial
+    // Initialise the board at the specified baud
+    SERIAL_PORT_MONITOR.begin(BAUD);
+    // Wait for a serial connection
     while (!SERIAL_PORT_MONITOR);
-    // init can bus at a baudrate = 500k
+    // Initialise the CAN board at the specified speed
     if (CAN_OK != CAN.begin(CAN_500KBPS)) {
         SERIAL_PORT_MONITOR.println("CAN init fail");
         SERIAL_PORT_MONITOR.flush();
@@ -128,7 +131,7 @@ void setup() {
 
             // Wait until the correct time is reached to send the message and
             // then send the related CAN message
-//            while ((millis() - timeStart) < time);
+            while ((millis() - timeStart) < time);
             int report = CAN.sendMsgBuf(id, 0, rtr, len, payload);
 
             // Check to see if the message was sent correctly and exit if not
